@@ -1,0 +1,74 @@
+CTYPE html>
+<html lang="en">
+	<head>
+		    <meta charset="UTF-8">
+		        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+			    <title>Todo App</title>
+			        <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+	        ul { list-style-type: none; padding: 0; }
+		        li { margin-bottom: 10px; }
+			        input[type="text"] { width: 70%; padding: 5px; }
+				        button { padding: 5px 10px; }
+					    </style>
+	</head>
+	<body>
+		    <h1>Todo App</h1>
+		        <input type="text" id="new-todo" placeholder="Enter a new todo">
+			    <button onclick="addTodo()">Add Todo</button>
+			        <ul id="todo-list"></ul>
+
+				    <script>
+					            function fetchTodos() {
+							                fetch('/todos')
+							                    .then(response => response.json())
+							                    .then(todos => {
+										                        const todoList = document.getElementById('todo-list');
+										                        todoList.innerHTML = '';
+										                        todos.forEach(todo => {
+														                        const li = document.createElement('li');
+														                        li.innerHTML = `
+																	                            <input type="checkbox" ${todo.completed ? 'checked' : ''} onchange="updateTodo(${todo.id}, this.checked)">
+																				                                <span>${todo.title}</span>
+																								                            <button onclick="deleteTodo(${todo.id})">Delete</button>
+																											                            `;
+														                        todoList.appendChild(li);
+														                    });
+										                    });
+							            }
+
+						            function addTodo() {
+								                const input = document.getElementById('new-todo');
+								                const title = input.value.trim();
+								                if (title) {
+											                fetch('/todos', {
+														                    method: 'POST',
+														                    headers: { 'Content-Type': 'application/json' },
+														                    body: JSON.stringify({ title, completed: false,id:123 })
+														                })
+											                .then(() => {
+														                    input.value = '';
+														                    fetchTodos();
+														                });
+											            }
+								            }
+
+						            function updateTodo(id, completed) {
+								                fetch(`/todos/${id}`, {
+											                method: 'PUT',
+											                headers: { 'Content-Type': 'application/json' },
+											                body: JSON.stringify({ completed })
+											            })
+								                .then(fetchTodos);
+								            }
+
+						            function deleteTodo(id) {
+								                fetch(`/todos/${id}`, { method: 'DELETE' })
+								                    .then(fetchTodos);
+								            }
+
+						            fetchTodos();
+						        </script>
+	</body>
+</html>
+
